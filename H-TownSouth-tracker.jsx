@@ -623,9 +623,9 @@ export default function App() {
 
   const addWeek = (w) => { setWeeks(prev => [...prev, w]); setSelWeek(weeks.length); };
   const deleteWeek = (id) => {
-    requirePin("Confirm deletion", () => {
+    setPinQueue({ reason: "Confirm deletion", onSuccess: () => {
       setWeeks(prev => { const n = prev.filter(w => w.id !== id); setSelWeek(Math.max(0, n.length - 1)); return n; });
-    });
+    }});
   };
 
   const months = ["All", ...Object.keys(groupByMonth(weeks))];
