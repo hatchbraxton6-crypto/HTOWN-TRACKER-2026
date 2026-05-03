@@ -142,7 +142,7 @@ function repTrend(weeks, repName) {
 
 // ── Slump detection ───────────────────────────────────────────────
 function getSlumpReps(weeks) {
-  const names = [...new Set(weeks.flatMap(w => w.reps.map(r => r.name)))];
+  const names = [...new Set(weeks.flatMap(w => w.reps.map(r => r.name)))].filter(n => !n.includes("☠️"));
   return names.reduce((out, name) => {
     const history = weeks
       .map(w => { const r = w.reps.find(x => x.name === name); return r ? { label: w.label, accounts: r.accounts } : null; })
