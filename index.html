@@ -109,6 +109,7 @@
 
     const STORAGE_KEY = "htown_south_full_v3";
     const GOAL_KEY = "htown_south_goal";
+    const PHOTOS_KEY = "htown_south_photos_v1";
     const fmt$ = (n) => "$" + Math.round(n).toLocaleString();
     const repRev = (r) => r.accounts * r.acv;
 
@@ -481,6 +482,80 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
       );
     }
 
+    // ── Rep Profile Modal ─────────────────────────────────────────────
+    function RepProfileModal({ rep, photo, allWeeks, onClose, onPhotoUpdate }) {
+      const fileRef = useRef();
+      const trend = repTrend(allWeeks, rep.name);
+      const initials = rep.name.replace(/[^a-zA-Z ]/g, '').split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+
+      const handlePhoto = (f) => {
+        if (!f) return;
+        const reader = new FileReader();
+        reader.onload = () => onPhotoUpdate(rep.name, reader.result);
+        reader.readAsDataURL(f);
+      };
+
+      return (
+        <div style={S.overlay} onClick={onClose}>
+          <div style={{ ...S.modal, maxWidth: 400 }} onClick={e => e.stopPropagation()}>
+            <div style={S.modalHead}>
+              <span style={S.modalTitle}>{rep.name}</span>
+              <button onClick={onClose} style={S.xBtn}>✕</button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 16 }}>
+              <div
+                style={{ width: 88, height: 88, borderRadius: '50%', overflow: 'hidden', cursor: 'pointer', border: '2px solid #2a4a2a', marginBottom: 6 }}
+                onClick={() => fileRef.current.click()}
+                title="Tap to update photo"
+              >
+                {photo
+                  ? <img src={photo} alt={rep.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <div style={{ width: '100%', height: '100%', background: '#1a2a1a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue',cursive", fontSize: 30, color: '#3db557', letterSpacing: 2 }}>{initials}</div>
+                }
+              </div>
+              <div style={{ fontSize: 10, color: '#333' }}>tap to add photo</div>
+              <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handlePhoto(e.target.files[0])} />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 14 }}>
+              {[
+                ['Total Accts', rep.accounts, '#3db557'],
+                ['Total Rev', fmt$(rep.revenue), '#3db557'],
+                ['Best Week', rep.bestWeek, '#f5c842'],
+                ['Avg/Wk', rep.avgPerWeek.toFixed(1), '#aaa'],
+                ['Avg ACV', fmt$(rep.avgAcv), '#aaa'],
+                ['Consistency', rep.weeksActive < 2 ? '—' : `${rep.consistency}/100`, rep.consistency >= 80 ? '#3db557' : rep.consistency >= 60 ? '#c8c820' : rep.consistency >= 40 ? '#e09020' : '#e05252'],
+              ].map(([label, val, color]) => (
+                <div key={label} style={{ background: '#0d0d0d', border: '1px solid #1a1a1a', borderRadius: 8, padding: '8px 4px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 8, color: '#444', letterSpacing: 1.5, fontWeight: 700, marginBottom: 4, textTransform: 'uppercase' }}>{label}</div>
+                  <div style={{ fontSize: 15, fontFamily: "'Bebas Neue',cursive", color, letterSpacing: 1 }}>{val}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
+              <Spark data={trend} />
+            </div>
+
+            <div style={{ fontSize: 10, color: '#444', letterSpacing: 2, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase' }}>Week History</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {rep.weekHistory.map((wh, j) => {
+                const mc = monthColor(wh.label);
+                return (
+                  <div key={j} style={{ background: mc.bg, border: `1px solid ${mc.border}`, borderRadius: 8, padding: '6px 10px', minWidth: 68, textAlign: 'center' }}>
+                    <div style={{ fontSize: 9, color: mc.text, letterSpacing: 1, fontWeight: 700 }}>{wh.label}</div>
+                    <div style={{ fontSize: 18, fontFamily: "'Bebas Neue',cursive", color: '#e0e0e0', lineHeight: 1.2 }}>{wh.accounts}</div>
+                    <div style={{ fontSize: 10, color: '#555' }}>{fmt$(wh.revenue)}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     // ── Main App ──────────────────────────────────────────────────────
     function App() {
       const [weeks, setWeeks] = useState(() => {
@@ -496,9 +571,16 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
       const [showGoal, setShowGoal] = useState(false);
       const [pinQueue, setPinQueue] = useState(null);
       const [unlocked, setUnlocked] = useState(false);
+      const [photos, setPhotos] = useState(() => {
+        try { const s = localStorage.getItem(PHOTOS_KEY); return s ? JSON.parse(s) : {}; } catch { return {}; }
+      });
+      const [profileRep, setProfileRep] = useState(null);
 
       useEffect(() => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(weeks)); } catch {} }, [weeks]);
       useEffect(() => { try { localStorage.setItem(GOAL_KEY, JSON.stringify(goal)); } catch {} }, [goal]);
+      useEffect(() => { try { localStorage.setItem(PHOTOS_KEY, JSON.stringify(photos)); } catch {} }, [photos]);
+
+      const updatePhoto = (name, dataUrl) => setPhotos(prev => ({ ...prev, [name]: dataUrl }));
 
       const requirePin = (reason, onSuccess) => {
         if (unlocked) { onSuccess(); return; }
@@ -690,7 +772,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                         <td style={{ ...S.td, textAlign: "center", fontWeight: 700, color: i === 0 ? "#f5c842" : i === 1 ? "#b0b0b0" : i === 2 ? "#c87533" : "#444" }}>
                           {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
                         </td>
-                        <td style={{ ...S.td, fontWeight: 600 }}>{rep.name}</td>
+                        <td style={{ ...S.td, fontWeight: 600, cursor: "pointer", color: "#e0e0e0" }} onClick={() => setProfileRep(rep.name)}>{rep.name}</td>
                         <td style={{ ...S.td, textAlign: "center" }}><span style={S.badge}>{rep.accounts}</span></td>
                         <td style={{ ...S.td, textAlign: "right", fontWeight: 700 }}>{fmt$(rep.revenue)}</td>
                         <td style={{ ...S.td, textAlign: "center" }}><Spark data={repTrend(weeks, rep.name)} /></td>
@@ -750,7 +832,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                       <tbody>{cw.reps.map((r, i) => (
                         <tr key={r.name} style={S.tr}>
                           <td style={{ ...S.td, textAlign: "center", color: "#444", fontWeight: 600 }}>{i + 1}</td>
-                          <td style={{ ...S.td, fontWeight: 600 }}>{r.name}</td>
+                          <td style={{ ...S.td, fontWeight: 600, cursor: "pointer", color: "#e0e0e0" }} onClick={() => setProfileRep(r.name)}>{r.name}</td>
                           <td style={{ ...S.td, textAlign: "center" }}><span style={S.badge}>{r.accounts}</span></td>
                           <td style={{ ...S.td, textAlign: "right", color: "#666", fontSize: 12 }}>{fmt$(r.acv)}</td>
                           <td style={{ ...S.td, textAlign: "right", fontWeight: 700, color: "#3db557" }}>{fmt$(repRev(r))}</td>
@@ -815,7 +897,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                         <td style={{ ...S.td, textAlign: "center", fontWeight: 700, color: i === 0 ? "#f5c842" : i === 1 ? "#b0b0b0" : i === 2 ? "#c87533" : "#444" }}>
                           {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
                         </td>
-                        <td style={{ ...S.td, fontWeight: 600 }}>{rep.name}</td>
+                        <td style={{ ...S.td, fontWeight: 600, cursor: "pointer", color: "#e0e0e0" }} onClick={() => setProfileRep(rep.name)}>{rep.name}</td>
                         <td style={{ ...S.td, textAlign: "center" }}><span style={S.badge}>{rep.accounts}</span></td>
                         <td style={{ ...S.td, textAlign: "right", fontWeight: 700 }}>{fmt$(rep.revenue)}</td>
                         <td style={{ ...S.td, textAlign: "right", color: "#666", fontSize: 12 }}>{fmt$(rep.avgAcv)}</td>
@@ -889,7 +971,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                         <td style={{ ...S.td, textAlign: "center", fontWeight: 700, color: i === 0 ? "#f5c842" : i === 1 ? "#b0b0b0" : i === 2 ? "#c87533" : "#444" }}>
                           {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
                         </td>
-                        <td style={{ ...S.td, fontWeight: 600 }}>{rep.name}</td>
+                        <td style={{ ...S.td, fontWeight: 600, cursor: "pointer", color: "#e0e0e0" }} onClick={() => setProfileRep(rep.name)}>{rep.name}</td>
                         <td style={{ ...S.td, textAlign: "center" }}><span style={S.badge}>{rep.accounts}</span></td>
                         <td style={{ ...S.td, textAlign: "right", fontWeight: 700 }}>{fmt$(rep.revenue)}</td>
                         <td style={{ ...S.td, textAlign: "center", color: "#3db557", fontWeight: 700 }}>{rep.bestWeek}</td>
@@ -936,6 +1018,10 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
           {showModal && <AddWeekModal weeks={weeks} onClose={() => setShowModal(false)} onSave={addWeek} />}
           {showGoal && <GoalModal goal={goal} onClose={() => setShowGoal(false)} onSave={setGoal} />}
           {pinQueue && <PinModal reason={pinQueue.reason} onSuccess={() => { setUnlocked(true); pinQueue.onSuccess(); }} onClose={() => setPinQueue(null)} />}
+          {profileRep && (() => {
+            const rep = allSummary.find(r => r.name === profileRep);
+            return rep ? <RepProfileModal rep={rep} photo={photos[profileRep]} allWeeks={weeks} onClose={() => setProfileRep(null)} onPhotoUpdate={updatePhoto} /> : null;
+          })()}
         </div>
       );
     }
