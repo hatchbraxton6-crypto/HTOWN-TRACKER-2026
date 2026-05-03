@@ -537,16 +537,6 @@ function RepProfileModal({ rep, photo, allWeeks, onClose, onPhotoUpdate, isSlump
           ))}
         </div>
 
-        {isSlumping && (
-          <div style={{ background: '#1a0808', border: '1px solid #5a1515', borderRadius: 10, padding: '10px 14px', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 20 }}>⚠️</span>
-            <div>
-              <div style={{ fontSize: 12, color: '#e05252', fontWeight: 700, letterSpacing: 0.5 }}>2 Consecutive Weeks ≤ 6</div>
-              <div style={{ fontSize: 10, color: '#663333', marginTop: 2 }}>May need a check-in</div>
-            </div>
-          </div>
-        )}
-
         {/* Best Week highlight */}
         <div style={{ background: 'linear-gradient(135deg,#2a2000,#1a1400)', border: '1px solid #6a5000', borderRadius: 12, padding: '14px 16px', marginBottom: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
@@ -686,6 +676,7 @@ export default function App() {
         {[["dashboard","📊 Overview"],["weekly","📅 Weekly"],["monthly","📆 Monthly"],["career","🏆 Career"]].map(([v, label]) => (
           <button key={v} style={{ ...S.navBtn, ...(view === v ? S.navActive : {}) }} onClick={() => setView(v)}>{label}</button>
         ))}
+        <button style={{ ...S.navBtn, ...(view === "staff" ? { color: "#e05252", borderBottom: "2px solid #e05252", fontWeight: 700 } : {}) }} onClick={() => requirePin("Access staff view", () => setView("staff"))}>🔒</button>
       </div>
 
       {/* ══ DASHBOARD ══ */}
@@ -1072,12 +1063,63 @@ export default function App() {
         </div>
       )}
 
+      {/* ══ STAFF ══ */}
+      {view === "staff" && (
+        <div style={S.content}>
+          <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 13, letterSpacing: 3, color: '#e05252', marginBottom: 14, opacity: 0.7 }}>🔒 STAFF VIEW · PRIVATE</div>
+
+          <div style={{ ...S.section, border: '1px solid #3a1010' }}>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 13, letterSpacing: 3, color: '#e05252', marginBottom: 10 }}>⚠️ NEEDS ATTENTION</div>
+            {slumpReps.length === 0
+              ? <div style={{ color: '#444', fontSize: 13, padding: '8px 0' }}>No reps flagged — everyone is above 6 in at least one of their last 2 weeks.</div>
+              : slumpReps.map((s, i) => (
+                <div key={s.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderTop: i > 0 ? '1px solid #2a1010' : 'none' }}>
+                  <span style={{ fontWeight: 700, cursor: 'pointer', color: '#e07070', fontSize: 14 }} onClick={() => setProfileRep(s.name)}>{s.name}</span>
+                  <span style={{ fontSize: 11, color: '#664444' }}>{s.prev.label}: {s.prev.accounts} accts · {s.last.label}: {s.last.accounts} accts</span>
+                </div>
+              ))
+            }
+          </div>
+
+          <div style={S.section}>
+            <div style={S.sectionTitle}>All Rep Averages · Last 2 Weeks</div>
+            <table style={S.table}>
+              <thead><tr>
+                <th style={S.th}>Rep</th>
+                <th style={{ ...S.th, textAlign: "center" }}>Prev Wk</th>
+                <th style={{ ...S.th, textAlign: "center" }}>Last Wk</th>
+                <th style={{ ...S.th, textAlign: "center" }}>Trend</th>
+              </tr></thead>
+              <tbody>{allSummary.map(rep => {
+                const hist = rep.weekHistory;
+                const last = hist[hist.length - 1];
+                const prev = hist.length >= 2 ? hist[hist.length - 2] : null;
+                const diff = prev ? last.accounts - prev.accounts : null;
+                const flagged = slumpNames.has(rep.name);
+                return (
+                  <tr key={rep.name} style={S.tr}>
+                    <td style={{ ...S.td, fontWeight: 600, cursor: 'pointer', color: flagged ? '#e07070' : '#e0e0e0' }} onClick={() => setProfileRep(rep.name)}>
+                      {rep.name}{flagged && <span style={{ marginLeft: 5 }}>⚠️</span>}
+                    </td>
+                    <td style={{ ...S.td, textAlign: "center", color: "#666" }}>{prev ? prev.accounts : "—"}</td>
+                    <td style={{ ...S.td, textAlign: "center", fontWeight: 700, color: flagged ? "#e05252" : "#e0e0e0" }}>{last ? last.accounts : "—"}</td>
+                    <td style={{ ...S.td, textAlign: "center", fontWeight: 700, color: diff === null ? "#444" : diff > 0 ? "#3db557" : diff < 0 ? "#e05252" : "#888" }}>
+                      {diff === null ? "—" : diff > 0 ? `+${diff} ▲` : `${diff} ▼`}
+                    </td>
+                  </tr>
+                );
+              })}</tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {showModal && <AddWeekModal weeks={weeks} onClose={() => setShowModal(false)} onSave={addWeek} />}
       {showGoal && <GoalModal goal={goal} onClose={() => setShowGoal(false)} onSave={setGoal} />}
       {pinQueue && <PinModal reason={pinQueue.reason} onSuccess={() => { setUnlocked(true); pinQueue.onSuccess(); }} onClose={() => setPinQueue(null)} />}
       {profileRep && (() => {
         const rep = allSummary.find(r => r.name === profileRep);
-        return rep ? <RepProfileModal rep={rep} photo={photos[profileRep]} allWeeks={weeks} onClose={() => setProfileRep(null)} onPhotoUpdate={updatePhoto} isSlumping={slumpNames.has(profileRep)} /> : null;
+        return rep ? <RepProfileModal rep={rep} photo={photos[profileRep]} allWeeks={weeks} onClose={() => setProfileRep(null)} onPhotoUpdate={updatePhoto} /> : null;
       })()}
     </div>
   );
