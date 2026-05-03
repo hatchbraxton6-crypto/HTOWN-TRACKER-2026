@@ -86,7 +86,7 @@ const SEED_WEEKS = [
   },
 ];
 
-const STORAGE_KEY = "htown_south_full_v3";
+const STORAGE_KEY = "htown_south_full_v4";
 const GOAL_KEY = "htown_south_goal";
 const PHOTOS_KEY = "htown_south_photos_v1";
 const fmt$ = (n) => "$" + Math.round(n).toLocaleString();
