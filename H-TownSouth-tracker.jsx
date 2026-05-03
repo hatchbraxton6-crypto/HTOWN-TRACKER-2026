@@ -140,6 +140,22 @@ function repTrend(weeks, repName) {
   });
 }
 
+// ── Slump detection ───────────────────────────────────────────────
+function getSlumpReps(weeks) {
+  const names = [...new Set(weeks.flatMap(w => w.reps.map(r => r.name)))];
+  return names.reduce((out, name) => {
+    const history = weeks
+      .map(w => { const r = w.reps.find(x => x.name === name); return r ? { label: w.label, accounts: r.accounts } : null; })
+      .filter(Boolean);
+    if (history.length >= 2) {
+      const last = history[history.length - 1];
+      const prev = history[history.length - 2];
+      if (last.accounts <= 6 && prev.accounts <= 6) out.push({ name, prev, last });
+    }
+    return out;
+  }, []);
+}
+
 // ── Sparkline ─────────────────────────────────────────────────────
 function Spark({ data }) {
   const valid = data.filter(d => d !== null);
@@ -471,7 +487,7 @@ const BADGES = [
 ];
 
 // ── Rep Profile Modal ─────────────────────────────────────────────
-function RepProfileModal({ rep, photo, allWeeks, onClose, onPhotoUpdate }) {
+function RepProfileModal({ rep, photo, allWeeks, onClose, onPhotoUpdate, isSlumping }) {
   const fileRef = useRef();
   const trend = repTrend(allWeeks, rep.name);
   const initials = rep.name.replace(/[^a-zA-Z ]/g, '').split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase();
@@ -520,6 +536,16 @@ function RepProfileModal({ rep, photo, allWeeks, onClose, onPhotoUpdate }) {
             </div>
           ))}
         </div>
+
+        {isSlumping && (
+          <div style={{ background: '#1a0808', border: '1px solid #5a1515', borderRadius: 10, padding: '10px 14px', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 20 }}>⚠️</span>
+            <div>
+              <div style={{ fontSize: 12, color: '#e05252', fontWeight: 700, letterSpacing: 0.5 }}>2 Consecutive Weeks ≤ 6</div>
+              <div style={{ fontSize: 10, color: '#663333', marginTop: 2 }}>May need a check-in</div>
+            </div>
+          </div>
+        )}
 
         {/* Best Week highlight */}
         <div style={{ background: 'linear-gradient(135deg,#2a2000,#1a1400)', border: '1px solid #6a5000', borderRadius: 12, padding: '14px 16px', marginBottom: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -624,6 +650,8 @@ export default function App() {
 
   // Rep of the Week
   const repOfWeek = latestWeek ? [...latestWeek.reps].sort((a, b) => b.accounts - a.accounts)[0] : null;
+  const slumpReps = getSlumpReps(weeks);
+  const slumpNames = new Set(slumpReps.map(s => s.name));
 
   // Office record — best single week ever
   const officeRecord = weeks.reduce((best, w) => {
@@ -1049,7 +1077,7 @@ export default function App() {
       {pinQueue && <PinModal reason={pinQueue.reason} onSuccess={() => { setUnlocked(true); pinQueue.onSuccess(); }} onClose={() => setPinQueue(null)} />}
       {profileRep && (() => {
         const rep = allSummary.find(r => r.name === profileRep);
-        return rep ? <RepProfileModal rep={rep} photo={photos[profileRep]} allWeeks={weeks} onClose={() => setProfileRep(null)} onPhotoUpdate={updatePhoto} /> : null;
+        return rep ? <RepProfileModal rep={rep} photo={photos[profileRep]} allWeeks={weeks} onClose={() => setProfileRep(null)} onPhotoUpdate={updatePhoto} isSlumping={slumpNames.has(profileRep)} /> : null;
       })()}
     </div>
   );
