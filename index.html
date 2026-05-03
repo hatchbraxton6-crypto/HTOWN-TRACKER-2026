@@ -482,6 +482,12 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
       );
     }
 
+    // ── Achievement Badges ────────────────────────────────────────────
+    const BADGES = [
+      { id: "club20", label: "20 Club", icon: "🔥", color: "#f5c842", bg: "#2a2000", border: "#6a5000", check: (rep) => rep.bestWeek >= 20 },
+      { id: "club15", label: "15 Club", icon: "⚡", color: "#3db557", bg: "#0a2010", border: "#1a5030", check: (rep) => rep.bestWeek >= 15 },
+    ];
+
     // ── Rep Profile Modal ─────────────────────────────────────────────
     function RepProfileModal({ rep, photo, allWeeks, onClose, onPhotoUpdate }) {
       const fileRef = useRef();
@@ -538,7 +544,25 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
               <Spark data={trend} />
             </div>
 
-            <div style={{ fontSize: 10, color: '#444', letterSpacing: 2, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase' }}>Week History</div>
+            {(() => {
+              const earned = BADGES.filter(b => b.check(rep));
+              if (!earned.length) return null;
+              return (
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 10, color: '#444', letterSpacing: 2, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase' }}>Achievements</div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {earned.map(b => (
+                      <div key={b.id} style={{ background: b.bg, border: `1px solid ${b.border}`, borderRadius: 20, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 15 }}>{b.icon}</span>
+                        <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 15, color: b.color, letterSpacing: 1.5 }}>{b.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
+        <div style={{ fontSize: 10, color: '#444', letterSpacing: 2, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase' }}>Week History</div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {rep.weekHistory.map((wh, j) => {
                 const mc = monthColor(wh.label);
