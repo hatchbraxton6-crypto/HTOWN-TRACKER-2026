@@ -254,6 +254,66 @@
       );
     }
 
+
+    // ── Team Line Chart ───────────────────────────────────────────────
+    function TeamLineChart({ weeks, teams }) {
+      const W = 640, H = 200, PL = 34, PR = 16, PT = 16, PB = 44;
+      const chartW = W - PL - PR;
+      const chartH = H - PT - PB;
+      if (weeks.length < 2) return <div style={{ color: "#444", fontSize: 12, textAlign: "center", padding: 20 }}>Need at least 2 weeks of data</div>;
+
+      const teamData = Object.entries(teams).map(([key, team]) => ({
+        key, team,
+        points: weeks.map(w => w.reps.filter(r => team.members.includes(r.name)).reduce((a, r) => a + r.accounts, 0))
+      }));
+
+      const allVals = teamData.flatMap(t => t.points);
+      const maxVal = Math.max(...allVals, 1);
+      const xScale = (i) => (i / (weeks.length - 1)) * chartW;
+      const yScale = (v) => chartH - (v / maxVal) * chartH;
+      const gridLines = [0, 0.25, 0.5, 0.75, 1];
+
+      return (
+        <div>
+          <div style={{ overflowX: "auto" }}>
+            <svg width={W} height={H} style={{ display: "block", minWidth: W }}>
+              {gridLines.map((pct, i) => {
+                const y = PT + chartH * (1 - pct);
+                return (
+                  <g key={i}>
+                    <line x1={PL} y1={y} x2={PL + chartW} y2={y} stroke="#1e1e1e" strokeWidth={1} />
+                    <text x={PL - 5} y={y + 4} textAnchor="end" fontSize={9} fill="#444">{Math.round(maxVal * pct)}</text>
+                  </g>
+                );
+              })}
+              {weeks.map((w, i) => (
+                <text key={i} x={PL + xScale(i)} y={H - 6} textAnchor="middle" fontSize={9} fill="#555">{w.label}</text>
+              ))}
+              {teamData.map(({ key, team, points }) => {
+                const coords = points.map((v, i) => `${PL + xScale(i)},${PT + yScale(v)}`).join(" ");
+                return (
+                  <g key={key}>
+                    <polyline points={coords} fill="none" stroke={team.color} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" opacity={0.9} />
+                    {points.map((v, i) => (
+                      <circle key={i} cx={PL + xScale(i)} cy={PT + yScale(v)} r={4} fill={team.color} stroke="#111" strokeWidth={1.5} />
+                    ))}
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+          <div style={{ display: "flex", gap: 18, justifyContent: "center", marginTop: 10, flexWrap: "wrap" }}>
+            {Object.entries(teams).map(([key, team]) => (
+              <div key={key} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <div style={{ width: 22, height: 3, background: team.color, borderRadius: 2 }} />
+                <span style={{ fontSize: 11, color: team.color, fontWeight: 700 }}>{team.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
     // ── Goal Bar ──────────────────────────────────────────────────────
     function GoalBar({ current, goal, label }) {
       const pct = Math.min(100, Math.round((current / goal) * 100));
@@ -1296,6 +1356,11 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                   </div>
                 );
               })()}
+
+              <div style={S.section}>
+                <div style={S.sectionTitle}>Team Performance · Week by Week</div>
+                <TeamLineChart weeks={weeks} teams={TEAMS} />
+              </div>
 
               <div style={{ ...S.section, border: '1px solid #3a1010' }}>
                 <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 13, letterSpacing: 3, color: '#e05252', marginBottom: 10 }}>⚠️ NEEDS ATTENTION</div>
