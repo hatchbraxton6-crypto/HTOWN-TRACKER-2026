@@ -151,6 +151,7 @@
     }
 
     const STORAGE_KEY = "htown_south_full_v5";
+    const SEASON_END = new Date("2026-08-31");
     const GOAL_KEY = "htown_south_goal";
     const PHOTOS_KEY = "htown_south_photos_v1";
     const fmt$ = (n) => "$" + Math.round(n).toLocaleString();
@@ -712,6 +713,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
       const latestWeek = weeks[weeks.length - 1];
       const latestTotals = latestWeek ? weekTotals(latestWeek) : { accounts: 0 };
 
+      const weeksRemaining = Math.max(0, (SEASON_END - new Date()) / (7 * 24 * 60 * 60 * 1000));
       const repOfWeek = latestWeek ? [...latestWeek.reps].filter(r => !r.name.includes("☠️")).sort((a, b) => b.accounts - a.accounts)[0] : null;
       const slumpReps = getSlumpReps(weeks);
       const slumpNames = new Set(slumpReps.map(s => s.name));
@@ -1218,6 +1220,35 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                     </div>
                   ))
                 }
+              </div>
+
+              <div style={S.section}>
+                <div style={S.sectionTitle}>📈 Season Pacing · End of August</div>
+                <div style={{ fontSize: 10, color: '#555', marginBottom: 10 }}>{Math.round(weeksRemaining)} weeks remaining · projected by Aug 31</div>
+                <table style={S.table}>
+                  <thead><tr>
+                    <th style={{ ...S.th, textAlign: "center" }}>#</th>
+                    <th style={S.th}>Rep</th>
+                    <th style={{ ...S.th, textAlign: "center" }}>Current</th>
+                    <th style={{ ...S.th, textAlign: "center" }}>Avg/Wk</th>
+                    <th style={{ ...S.th, textAlign: "center" }}>Projected</th>
+                    <th style={{ ...S.th, textAlign: "right" }}>Proj. Rev</th>
+                  </tr></thead>
+                  <tbody>{[...allSummary].sort((a, b) => (b.accounts + b.avgPerWeek * weeksRemaining) - (a.accounts + a.avgPerWeek * weeksRemaining)).map((rep, i) => {
+                    const projected = Math.round(rep.accounts + rep.avgPerWeek * weeksRemaining);
+                    const projRev = Math.round(rep.revenue + rep.avgPerWeek * weeksRemaining * rep.avgAcv);
+                    return (
+                      <tr key={rep.name} style={S.tr}>
+                        <td style={{ ...S.td, textAlign: "center", color: "#444" }}>{i + 1}</td>
+                        <td style={{ ...S.td, fontWeight: 600, cursor: 'pointer', color: '#e0e0e0' }} onClick={() => setProfileRep(rep.name)}><RepName name={rep.name} /></td>
+                        <td style={{ ...S.td, textAlign: "center", color: "#666" }}>{rep.accounts}</td>
+                        <td style={{ ...S.td, textAlign: "center", color: "#666" }}>{rep.avgPerWeek.toFixed(1)}</td>
+                        <td style={{ ...S.td, textAlign: "center", fontWeight: 800, fontSize: 16, color: projected >= 150 ? "#f5c842" : projected >= 80 ? "#3db557" : "#e0e0e0" }}>{projected}</td>
+                        <td style={{ ...S.td, textAlign: "right", fontWeight: 700, color: projRev >= 100000 ? "#f5c842" : "#3db557" }}>{fmt$(projRev)}</td>
+                      </tr>
+                    );
+                  })}</tbody>
+                </table>
               </div>
 
               <div style={S.section}>
