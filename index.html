@@ -789,6 +789,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
 
               {repOfWeek && (
                 <div style={{ background: "linear-gradient(135deg,#2a1f00,#161000,#2a1f00)", border: "1px solid #8a6a00", borderRadius: 16, padding: "18px 16px", marginBottom: 14, position: "relative", overflow: "hidden" }}>
+                  <div style={{ position: "relative", zIndex: 1 }}>
                   <div style={{ fontSize: 9, letterSpacing: 3, color: "#7a5a00", fontWeight: 700, marginBottom: 12, textTransform: "uppercase" }}>⭐ Rep of the Week · {latestWeek?.label}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                     <div style={{ width: 68, height: 68, borderRadius: "50%", overflow: "hidden", border: "2px solid #8a6a00", flexShrink: 0, cursor: "pointer" }} onClick={() => setProfileRep(repOfWeek.name)}>
@@ -812,7 +813,11 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                         </div>
                       </div>
                     </div>
-                    <img src={photos["__rotw__"]} alt="" style={{ height: 90, width: 72, objectFit: "cover", objectPosition: "center top", borderRadius: 10, flexShrink: 0, opacity: 0.92 }} />
+                  </div>
+                  </div>
+                  <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 160, overflow: "hidden", borderRadius: "0 16px 16px 0" }}>
+                    <img src={photos["__rotw__"]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }} />
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, #161000 0%, rgba(22,16,0,0.6) 40%, transparent 100%)" }} />
                   </div>
                 </div>
               )}
