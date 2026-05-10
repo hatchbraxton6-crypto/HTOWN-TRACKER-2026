@@ -132,9 +132,21 @@
 
     const ROOKIES = new Set(["Jack B","John K","Easton R","Scott S","Iohani W","David R","John L","Amari W","Alvin S","Mosiah F"]);
 
+    const TEAMS = {
+      "Braxton":   { label: "Braxton's Team",   badge: "BRAX", color: "#4a8aff", bg: "#0a1535", border: "#1a3a7e", members: ["Braxton H","Reese H","Seth T","Burkley P","Jack B"] },
+      "Kevin":     { label: "Kevin's Team",     badge: "KEV",  color: "#f5a020", bg: "#2a1400", border: "#7a3a00", members: ["Kevin J","David R","John K","John L","Salsabil F","Anthony V"] },
+      "Hannemann": { label: "Hannemann's Team", badge: "HANN", color: "#c050e0", bg: "#1a0a2a", border: "#5a1e7a", members: ["Hannemann W","Easton R","Scott S","Iohani W","Amari W","Alvin S","Mosiah F"] },
+    };
+    function getTeam(name) {
+      return Object.entries(TEAMS).find(([, t]) => t.members.includes(name))?.[0] || null;
+    }
+
     function RepName({ name }) {
+      const teamKey = getTeam(name);
+      const team = teamKey ? TEAMS[teamKey] : null;
       return (
         <span style={{ whiteSpace: "nowrap" }}>
+          {team && <span style={{ fontSize: 9, background: team.bg, color: team.color, border: `1px solid ${team.border}`, borderRadius: 4, padding: "1px 5px", marginRight: 5, fontWeight: 700, letterSpacing: 0.5, verticalAlign: "middle" }}>{team.badge}</span>}
           {name}
           {ROOKIES.has(name) && <span style={{ fontSize: 9, background: "#0a1a3a", color: "#4a8aff", border: "1px solid #1a3a6e", borderRadius: 4, padding: "1px 5px", marginLeft: 5, fontWeight: 700, letterSpacing: 0.5, verticalAlign: "middle" }}>ROOK</span>}
         </span>
@@ -734,7 +746,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
 
           {/* Nav */}
           <div style={S.nav}>
-            {[["dashboard","📊 Overview"],["weekly","📅 Weekly"],["monthly","📆 Monthly"],["career","🏆 Career"]].map(([v, label]) => (
+            {[["dashboard","📊 Overview"],["weekly","📅 Weekly"],["monthly","📆 Monthly"],["career","🏆 Career"],["teams","👥 Teams"]].map(([v, label]) => (
               <button key={v} style={{ ...S.navBtn, ...(view === v ? S.navActive : {}) }} onClick={() => setView(v)}>{label}</button>
             ))}
             <button style={{ ...S.navBtn, ...(view === "staff" ? { color: "#e05252", borderBottom: "2px solid #e05252", fontWeight: 700 } : {}) }} onClick={() => requirePin("Access staff view", () => setView("staff"))}>🔒</button>
@@ -1113,6 +1125,84 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* ══ TEAMS ══ */}
+          {view === "teams" && (
+            <div style={S.content}>
+              <div style={S.cardRow}>
+                {Object.entries(TEAMS).map(([key, team]) => {
+                  const tw = weeks.map(w => ({ ...w, reps: w.reps.filter(r => team.members.includes(r.name)) }));
+                  const totals = tw.reduce((a, w) => { const t = weekTotals(w); return { accounts: a.accounts + t.accounts, revenue: a.revenue + t.revenue }; }, { accounts: 0, revenue: 0 });
+                  return (
+                    <div key={key} style={{ ...S.card, background: team.bg, border: `1px solid ${team.border}`, flex: 1 }}>
+                      <div style={{ ...S.cardLabel, color: team.color }}>{team.label}</div>
+                      <div style={{ ...S.cardVal, color: team.color, fontSize: 34 }}>{totals.accounts}</div>
+                      <div style={S.cardSub}>{team.members.length} reps · {fmt$(totals.revenue)}</div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div style={S.section}>
+                <div style={S.sectionTitle}>Team Standings</div>
+                <table style={S.table}>
+                  <thead><tr>
+                    <th style={S.th}>Team</th>
+                    <th style={{ ...S.th, textAlign: "center" }}>Reps</th>
+                    <th style={{ ...S.th, textAlign: "center" }}>Total Accts</th>
+                    <th style={{ ...S.th, textAlign: "right" }}>Revenue</th>
+                    <th style={{ ...S.th, textAlign: "center" }}>Avg/Rep</th>
+                    <th style={{ ...S.th, textAlign: "center" }}>Avg/Wk</th>
+                  </tr></thead>
+                  <tbody>{Object.entries(TEAMS).map(([key, team]) => {
+                    const tw = weeks.map(w => ({ ...w, reps: w.reps.filter(r => team.members.includes(r.name)) }));
+                    const totals = tw.reduce((a, w) => { const t = weekTotals(w); return { accounts: a.accounts + t.accounts, revenue: a.revenue + t.revenue }; }, { accounts: 0, revenue: 0 });
+                    return (
+                      <tr key={key} style={S.tr}>
+                        <td style={{ ...S.td, fontWeight: 700 }}>
+                          <span style={{ background: team.bg, color: team.color, border: `1px solid ${team.border}`, borderRadius: 5, padding: "2px 8px", fontSize: 12, fontWeight: 700 }}>{team.label}</span>
+                        </td>
+                        <td style={{ ...S.td, textAlign: "center", color: "#555" }}>{team.members.length}</td>
+                        <td style={{ ...S.td, textAlign: "center", fontWeight: 800, fontSize: 18 }}>{totals.accounts}</td>
+                        <td style={{ ...S.td, textAlign: "right", fontWeight: 700 }}>{fmt$(totals.revenue)}</td>
+                        <td style={{ ...S.td, textAlign: "center", color: "#aaa" }}>{Math.round(totals.accounts / team.members.length)}</td>
+                        <td style={{ ...S.td, textAlign: "center", color: "#aaa" }}>{Math.round(totals.accounts / (weeks.length || 1))}/wk</td>
+                      </tr>
+                    );
+                  })}</tbody>
+                </table>
+              </div>
+
+              {Object.entries(TEAMS).map(([key, team]) => {
+                const summary = repSummary(weeks).filter(r => team.members.includes(r.name));
+                return (
+                  <div key={key} style={{ ...S.section, border: `1px solid ${team.border}` }}>
+                    <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 13, letterSpacing: 3, color: team.color, marginBottom: 10 }}>{team.label}</div>
+                    <table style={S.table}>
+                      <thead><tr>
+                        <th style={{ ...S.th, textAlign: "center" }}>#</th>
+                        <th style={S.th}>Rep</th>
+                        <th style={{ ...S.th, textAlign: "center" }}>Total Accts</th>
+                        <th style={{ ...S.th, textAlign: "right" }}>Revenue</th>
+                        <th style={{ ...S.th, textAlign: "center" }}>Avg/Wk</th>
+                        <th style={{ ...S.th, textAlign: "center" }}>Trend</th>
+                      </tr></thead>
+                      <tbody>{summary.map((rep, i) => (
+                        <tr key={rep.name} style={S.tr}>
+                          <td style={{ ...S.td, textAlign: "center", fontWeight: 700, color: i === 0 ? team.color : "#444" }}>{i === 0 ? "★" : i + 1}</td>
+                          <td style={{ ...S.td, fontWeight: 600, cursor: "pointer", color: "#e0e0e0" }} onClick={() => setProfileRep(rep.name)}><RepName name={rep.name} /></td>
+                          <td style={{ ...S.td, textAlign: "center" }}><span style={{ ...S.badge, background: team.bg, color: team.color }}>{rep.accounts}</span></td>
+                          <td style={{ ...S.td, textAlign: "right", fontWeight: 700 }}>{fmt$(rep.revenue)}</td>
+                          <td style={{ ...S.td, textAlign: "center", color: "#aaa" }}>{rep.avgPerWeek.toFixed(1)}</td>
+                          <td style={{ ...S.td, textAlign: "center" }}><Spark data={repTrend(weeks, rep.name)} /></td>
+                        </tr>
+                      ))}</tbody>
+                    </table>
+                  </div>
+                );
+              })}
             </div>
           )}
 
