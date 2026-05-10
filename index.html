@@ -494,6 +494,9 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
               <div style={S.label}>Monthly Account Goal</div>
               <input style={S.input} type="number" placeholder="e.g. 300" value={monthly} onChange={e => setMonthly(e.target.value)} />
             </div>
+            {(goal.weekly > 0 || goal.monthly > 0) && (
+              <button style={{ ...S.ghostBtn, width: "100%", marginBottom: 10, color: "#e05252", borderColor: "#3a1010" }} onClick={() => { onSave({ weekly: 0, monthly: 0 }); onClose(); }}>🗑 Clear Goals</button>
+            )}
             <div style={{ display: "flex", gap: 10 }}>
               <button style={{ ...S.btn, flex: 1, background: "#1e1e1e", color: "#666" }} onClick={onClose}>Cancel</button>
               <button style={{ ...S.btn, flex: 2 }} onClick={() => { onSave({ weekly: Number(weekly) || 0, monthly: Number(monthly) || 0 }); onClose(); }}>Save Goals</button>
