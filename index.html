@@ -257,27 +257,51 @@
 
     // ── Team Line Chart ───────────────────────────────────────────────
     function TeamLineChart({ weeks, teams }) {
+      const [tab, setTab] = useState("teams");
+      const [hiddenSeries, setHiddenSeries] = useState(new Set());
       const W = 640, H = 200, PL = 34, PR = 16, PT = 16, PB = 44;
       const chartW = W - PL - PR;
       const chartH = H - PT - PB;
       if (weeks.length < 2) return <div style={{ color: "#444", fontSize: 12, textAlign: "center", padding: 20 }}>Need at least 2 weeks of data</div>;
 
-      const teamData = Object.entries(teams).map(([key, team]) => ({
-        key, team,
-        points: weeks.map(w => w.reps.filter(r => team.members.includes(r.name)).reduce((a, r) => a + r.accounts, 0))
-      }));
+      const toggleSeries = (key) => setHiddenSeries(prev => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n; });
 
-      const allVals = teamData.flatMap(t => t.points);
+      let series = [];
+      if (tab === "teams") {
+        series = Object.entries(teams).map(([key, team]) => ({
+          key, label: team.label, color: team.color,
+          points: weeks.map(w => w.reps.filter(r => team.members.includes(r.name)).reduce((a, r) => a + r.accounts, 0))
+        }));
+      } else if (tab === "office") {
+        series = [{ key: "office", label: "Office Total", color: "#3db557",
+          points: weeks.map(w => w.reps.filter(r => !r.name.includes("☠")).reduce((a, r) => a + r.accounts, 0))
+        }];
+      } else {
+        const allReps = [...new Set(weeks.flatMap(w => w.reps.map(r => r.name)))].filter(n => !n.includes("☠"));
+        series = allReps.map(name => {
+          const teamEntry = Object.entries(teams).find(([, t]) => t.members.includes(name));
+          return { key: name, label: name, color: teamEntry ? teamEntry[1].color : "#888",
+            points: weeks.map(w => { const r = w.reps.find(x => x.name === name); return r ? r.accounts : 0; })
+          };
+        });
+      }
+
+      const visible = series.filter(s => !hiddenSeries.has(s.key));
+      const allVals = visible.flatMap(s => s.points);
       const maxVal = Math.max(...allVals, 1);
       const xScale = (i) => (i / (weeks.length - 1)) * chartW;
       const yScale = (v) => chartH - (v / maxVal) * chartH;
-      const gridLines = [0, 0.25, 0.5, 0.75, 1];
 
       return (
         <div>
+          <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+            {[["teams","👥 Teams"],["reps","🧑 Reps"],["office","🏢 Office"]].map(([t, label]) => (
+              <button key={t} onClick={() => { setTab(t); setHiddenSeries(new Set()); }} style={{ background: "none", border: `1px solid ${tab === t ? "#3db557" : "#252525"}`, color: tab === t ? "#3db557" : "#555", borderRadius: 6, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontWeight: tab === t ? 700 : 400 }}>{label}</button>
+            ))}
+          </div>
           <div style={{ overflowX: "auto" }}>
             <svg width={W} height={H} style={{ display: "block", minWidth: W }}>
-              {gridLines.map((pct, i) => {
+              {[0, 0.25, 0.5, 0.75, 1].map((pct, i) => {
                 const y = PT + chartH * (1 - pct);
                 return (
                   <g key={i}>
@@ -289,26 +313,29 @@
               {weeks.map((w, i) => (
                 <text key={i} x={PL + xScale(i)} y={H - 6} textAnchor="middle" fontSize={9} fill="#555">{w.label}</text>
               ))}
-              {teamData.map(({ key, team, points }) => {
+              {visible.map(({ key, color, points }) => {
                 const coords = points.map((v, i) => `${PL + xScale(i)},${PT + yScale(v)}`).join(" ");
                 return (
                   <g key={key}>
-                    <polyline points={coords} fill="none" stroke={team.color} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" opacity={0.9} />
+                    <polyline points={coords} fill="none" stroke={color} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" opacity={0.9} />
                     {points.map((v, i) => (
-                      <circle key={i} cx={PL + xScale(i)} cy={PT + yScale(v)} r={4} fill={team.color} stroke="#111" strokeWidth={1.5} />
+                      <circle key={i} cx={PL + xScale(i)} cy={PT + yScale(v)} r={tab === "reps" ? 3 : 4} fill={color} stroke="#111" strokeWidth={1.5} />
                     ))}
                   </g>
                 );
               })}
             </svg>
           </div>
-          <div style={{ display: "flex", gap: 18, justifyContent: "center", marginTop: 10, flexWrap: "wrap" }}>
-            {Object.entries(teams).map(([key, team]) => (
-              <div key={key} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <div style={{ width: 22, height: 3, background: team.color, borderRadius: 2 }} />
-                <span style={{ fontSize: 11, color: team.color, fontWeight: 700 }}>{team.label}</span>
-              </div>
-            ))}
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 10, flexWrap: "wrap" }}>
+            {series.map(({ key, label, color }) => {
+              const hidden = hiddenSeries.has(key);
+              return (
+                <div key={key} onClick={() => toggleSeries(key)} style={{ display: "flex", alignItems: "center", gap: 5, cursor: "pointer", opacity: hidden ? 0.3 : 1 }}>
+                  <div style={{ width: 18, height: 3, background: color, borderRadius: 2 }} />
+                  <span style={{ fontSize: tab === "reps" ? 10 : 11, color, fontWeight: 700 }}>{label}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       );
