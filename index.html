@@ -695,13 +695,14 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
       const filteredWeeks = selMonth === "All" ? weeks : weeks.filter(w => w.month === selMonth);
       const cw = weeks[selWeek];
       const ct = cw ? weekTotals(cw) : null;
-      const allSummary = repSummary(weeks);
-      const filteredSummary = repSummary(filteredWeeks);
+      const allSummary = repSummary(weeks).filter(r => !r.name.includes("☠️"));
+      const quitSummary = repSummary(weeks).filter(r => r.name.includes("☠️"));
+      const filteredSummary = repSummary(filteredWeeks).filter(r => !r.name.includes("☠️"));
       const filteredTotals = filteredWeeks.reduce((a, w) => { const t = weekTotals(w); return { accounts: a.accounts + t.accounts, revenue: a.revenue + t.revenue }; }, { accounts: 0, revenue: 0 });
       const latestWeek = weeks[weeks.length - 1];
       const latestTotals = latestWeek ? weekTotals(latestWeek) : { accounts: 0 };
 
-      const repOfWeek = latestWeek ? [...latestWeek.reps].sort((a, b) => b.accounts - a.accounts)[0] : null;
+      const repOfWeek = latestWeek ? [...latestWeek.reps].filter(r => !r.name.includes("☠️")).sort((a, b) => b.accounts - a.accounts)[0] : null;
       const slumpReps = getSlumpReps(weeks);
       const slumpNames = new Set(slumpReps.map(s => s.name));
 
@@ -929,7 +930,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                         <th style={{ ...S.th, textAlign: "right" }}>ACV</th>
                         <th style={{ ...S.th, textAlign: "right" }}>Revenue</th>
                       </tr></thead>
-                      <tbody>{cw.reps.map((r, i) => (
+                      <tbody>{cw.reps.filter(r => !r.name.includes("☠️")).map((r, i) => (
                         <tr key={r.name} style={S.tr}>
                           <td style={{ ...S.td, textAlign: "center", color: "#444", fontWeight: 600 }}>{i + 1}</td>
                           <td style={{ ...S.td, fontWeight: 600, cursor: "pointer", color: "#e0e0e0" }} onClick={() => setProfileRep(r.name)}><RepName name={r.name} /></td>
@@ -1163,6 +1164,28 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                   })}</tbody>
                 </table>
               </div>
+
+              {quitSummary.length > 0 && (
+                <div style={{ ...S.section, border: '1px solid #1a1a2a' }}>
+                  <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 13, letterSpacing: 3, color: '#555', marginBottom: 10 }}>☠️ QUIT</div>
+                  <table style={S.table}>
+                    <thead><tr>
+                      <th style={S.th}>Rep</th>
+                      <th style={{ ...S.th, textAlign: "center" }}>Total Accts</th>
+                      <th style={{ ...S.th, textAlign: "right" }}>Total Rev</th>
+                      <th style={{ ...S.th, textAlign: "center" }}>Wks Active</th>
+                    </tr></thead>
+                    <tbody>{quitSummary.map(rep => (
+                      <tr key={rep.name} style={S.tr}>
+                        <td style={{ ...S.td, color: '#555', fontWeight: 600 }}>{rep.name}</td>
+                        <td style={{ ...S.td, textAlign: "center", color: '#444', fontWeight: 700 }}>{rep.accounts}</td>
+                        <td style={{ ...S.td, textAlign: "right", color: '#444' }}>{fmt$(rep.revenue)}</td>
+                        <td style={{ ...S.td, textAlign: "center", color: '#444' }}>{rep.weeksActive}</td>
+                      </tr>
+                    ))}</tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 
@@ -1170,7 +1193,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
           {showGoal && <GoalModal goal={goal} onClose={() => setShowGoal(false)} onSave={setGoal} />}
           {pinQueue && <PinModal reason={pinQueue.reason} onSuccess={() => { setUnlocked(true); pinQueue.onSuccess(); }} onClose={() => setPinQueue(null)} />}
           {profileRep && (() => {
-            const rep = allSummary.find(r => r.name === profileRep);
+            const rep = allSummary.find(r => r.name === profileRep) || quitSummary.find(r => r.name === profileRep);
             return rep ? <RepProfileModal rep={rep} photo={photos[profileRep]} allWeeks={weeks} onClose={() => setProfileRep(null)} onPhotoUpdate={updatePhoto} /> : null;
           })()}
         </div>
