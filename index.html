@@ -1231,20 +1231,26 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                     <th style={S.th}>Rep</th>
                     <th style={{ ...S.th, textAlign: "center" }}>Current</th>
                     <th style={{ ...S.th, textAlign: "center" }}>Avg/Wk</th>
+                    <th style={{ ...S.th, textAlign: "center" }}>Target</th>
                     <th style={{ ...S.th, textAlign: "center" }}>Projected</th>
-                    <th style={{ ...S.th, textAlign: "right" }}>Proj. Rev</th>
+                    <th style={{ ...S.th, textAlign: "center" }}>Gap</th>
                   </tr></thead>
                   <tbody>{[...allSummary].sort((a, b) => (b.accounts + b.avgPerWeek * weeksRemaining) - (a.accounts + a.avgPerWeek * weeksRemaining)).map((rep, i) => {
+                    const target = ROOKIES.has(rep.name) ? 100 : 200;
                     const projected = Math.round(rep.accounts + rep.avgPerWeek * weeksRemaining);
-                    const projRev = Math.round(rep.revenue + rep.avgPerWeek * weeksRemaining * rep.avgAcv);
+                    const gap = projected - target;
+                    const onPace = projected >= target;
+                    const close = projected >= target * 0.85;
+                    const projColor = onPace ? "#3db557" : close ? "#c8c820" : "#e05252";
                     return (
                       <tr key={rep.name} style={S.tr}>
                         <td style={{ ...S.td, textAlign: "center", color: "#444" }}>{i + 1}</td>
                         <td style={{ ...S.td, fontWeight: 600, cursor: 'pointer', color: '#e0e0e0' }} onClick={() => setProfileRep(rep.name)}><RepName name={rep.name} /></td>
                         <td style={{ ...S.td, textAlign: "center", color: "#666" }}>{rep.accounts}</td>
                         <td style={{ ...S.td, textAlign: "center", color: "#666" }}>{rep.avgPerWeek.toFixed(1)}</td>
-                        <td style={{ ...S.td, textAlign: "center", fontWeight: 800, fontSize: 16, color: projected >= 150 ? "#f5c842" : projected >= 80 ? "#3db557" : "#e0e0e0" }}>{projected}</td>
-                        <td style={{ ...S.td, textAlign: "right", fontWeight: 700, color: projRev >= 100000 ? "#f5c842" : "#3db557" }}>{fmt$(projRev)}</td>
+                        <td style={{ ...S.td, textAlign: "center", color: "#555", fontWeight: 700 }}>{target}</td>
+                        <td style={{ ...S.td, textAlign: "center", fontWeight: 800, fontSize: 16, color: projColor }}>{projected}</td>
+                        <td style={{ ...S.td, textAlign: "center", fontWeight: 700, color: onPace ? "#3db557" : "#e05252" }}>{gap > 0 ? `+${gap}` : gap}</td>
                       </tr>
                     );
                   })}</tbody>
