@@ -1231,6 +1231,46 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
             <div style={S.content}>
               <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 13, letterSpacing: 3, color: '#e05252', marginBottom: 14, opacity: 0.7 }}>🔒 STAFF VIEW · PRIVATE</div>
 
+              {(() => {
+                const officeAccounts = weeks.reduce((a, w) => a + weekTotals(w).accounts, 0);
+                const officeRevenue = weeks.reduce((a, w) => a + weekTotals(w).revenue, 0);
+                const officeAvg = officeAccounts / (weeks.length || 1);
+                const officeProjected = Math.round(officeAccounts + officeAvg * weeksRemaining);
+                const officeProjectedRev = Math.round(officeRevenue + officeAvg * (officeRevenue / (officeAccounts || 1)) * weeksRemaining);
+                return (
+                  <div style={{ marginBottom: 14 }}>
+                    <div style={{ fontSize: 9, letterSpacing: 3, color: '#555', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase' }}>📈 Season Pacing · {Math.round(weeksRemaining)} wks left</div>
+                    <div style={{ background: "linear-gradient(135deg,#0a1a10,#091208)", border: "1px solid #1e4a2e", borderRadius: 12, padding: "14px 16px", marginBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div>
+                        <div style={{ fontSize: 9, letterSpacing: 2, color: '#3a6a4a', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase' }}>🏢 Office Projected</div>
+                        <div style={{ fontSize: 10, color: '#3a5a40' }}>{officeAccounts} now · {officeAvg.toFixed(1)}/wk avg</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 40, color: "#3db557", lineHeight: 1 }}>{officeProjected}</div>
+                        <div style={{ fontSize: 11, color: '#3a6a4a', fontWeight: 700 }}>{fmt$(officeProjectedRev)}</div>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      {Object.entries(TEAMS).map(([key, team]) => {
+                        const summary = repSummary(weeks).filter(r => team.members.includes(r.name));
+                        const teamAccounts = summary.reduce((a, r) => a + r.accounts, 0);
+                        const teamRevenue = summary.reduce((a, r) => a + r.revenue, 0);
+                        const teamAvg = teamAccounts / (weeks.length || 1);
+                        const teamProjected = Math.round(teamAccounts + teamAvg * weeksRemaining);
+                        const teamProjectedRev = Math.round(teamRevenue + teamAvg * (teamRevenue / (teamAccounts || 1)) * weeksRemaining);
+                        return (
+                          <div key={key} style={{ flex: 1, background: team.bg, border: `1px solid ${team.border}`, borderRadius: 10, padding: "10px 10px" }}>
+                            <div style={{ fontSize: 8, letterSpacing: 1.5, color: team.color, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', opacity: 0.8 }}>{team.label}</div>
+                            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 30, color: team.color, lineHeight: 1, marginBottom: 2 }}>{teamProjected}</div>
+                            <div style={{ fontSize: 10, color: team.color, opacity: 0.6, fontWeight: 700 }}>{fmt$(teamProjectedRev)}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+
               <div style={{ ...S.section, border: '1px solid #3a1010' }}>
                 <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 13, letterSpacing: 3, color: '#e05252', marginBottom: 10 }}>⚠️ NEEDS ATTENTION</div>
                 {slumpReps.length === 0
