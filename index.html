@@ -543,6 +543,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
 
     // ── Achievement Badges ────────────────────────────────────────────
     const BADGES = [
+      { id: "100k", label: "$100K Club", icon: "💰", color: "#f5c842", bg: "#2a1a00", border: "#7a5000", check: (rep) => rep.revenue >= 100000 },
       { id: "club20", label: "20 Club", icon: "🔥", color: "#f5c842", bg: "#2a2000", border: "#6a5000", check: (rep) => rep.bestWeek >= 20 },
       { id: "club15", label: "15 Club", icon: "⚡", color: "#3db557", bg: "#0a2010", border: "#1a5030", check: (rep) => rep.bestWeek >= 15 },
     ];
