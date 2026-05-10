@@ -142,11 +142,8 @@
     }
 
     function RepName({ name }) {
-      const teamKey = getTeam(name);
-      const team = teamKey ? TEAMS[teamKey] : null;
       return (
         <span style={{ whiteSpace: "nowrap" }}>
-          {team && <span style={{ fontSize: 9, background: team.bg, color: team.color, border: `1px solid ${team.border}`, borderRadius: 4, padding: "1px 5px", marginRight: 5, fontWeight: 700, letterSpacing: 0.5, verticalAlign: "middle" }}>{team.badge}</span>}
           {name}
           {ROOKIES.has(name) && <span style={{ fontSize: 9, background: "#0a1a3a", color: "#4a8aff", border: "1px solid #1a3a6e", borderRadius: 4, padding: "1px 5px", marginLeft: 5, fontWeight: 700, letterSpacing: 0.5, verticalAlign: "middle" }}>ROOK</span>}
         </span>
