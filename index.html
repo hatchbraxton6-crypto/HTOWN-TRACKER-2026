@@ -134,8 +134,8 @@
 
     const TEAMS = {
       "Braxton":   { label: "Cartel",            badge: "BRAX", color: "#4a8aff", bg: "#0a1535", border: "#1a3a7e", members: ["Braxton H","Reese H","Seth T","Burkley P","Jack B"] },
-      "Kevin":     { label: "Big Hitters",      badge: "KEV",  color: "#f5a020", bg: "#2a1400", border: "#7a3a00", members: ["Kevin J","David R","John K","John L","Salsabil F","Anthony V"] },
-      "Hannemann": { label: "Island Bois",      badge: "HANN", color: "#c050e0", bg: "#1a0a2a", border: "#5a1e7a", members: ["Hannemann W","Easton R","Scott S","Iohani W","Amari W","Alvin S","Mosiah F"] },
+      "Kevin":     { label: "Big Hitters",      badge: "KEV",  color: "#f5a020", bg: "#2a1400", border: "#7a3a00", members: ["Kevin J","David R","John L","Salsabil F","Anthony V"] },
+      "Hannemann": { label: "Island Bois",      badge: "HANN", color: "#c050e0", bg: "#1a0a2a", border: "#5a1e7a", members: ["Hannemann W","Easton R","Scott S","Iohani W","Amari W","Alvin S","Mosiah F","John K"] },
     };
     function getTeam(name) {
       return Object.entries(TEAMS).find(([, t]) => t.members.includes(name))?.[0] || null;
