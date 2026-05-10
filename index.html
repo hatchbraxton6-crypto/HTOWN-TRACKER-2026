@@ -693,6 +693,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
         try { const s = localStorage.getItem(PHOTOS_KEY); return { ...SEED_PHOTOS, ...(s ? JSON.parse(s) : {}) }; } catch { return SEED_PHOTOS; }
       });
       const [profileRep, setProfileRep] = useState(null);
+      const [showAllWeeks, setShowAllWeeks] = useState(false);
 
       useEffect(() => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(weeks)); } catch {} }, [weeks]);
       useEffect(() => { try { localStorage.setItem(GOAL_KEY, JSON.stringify(goal)); } catch {} }, [goal]);
@@ -877,7 +878,11 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
               )}
 
               <div style={S.section}>
-                <div style={S.sectionTitle}>All Weeks</div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: showAllWeeks ? 10 : 0 }}>
+                  <div style={S.sectionTitle}>All Weeks</div>
+                  <button onClick={() => setShowAllWeeks(v => !v)} style={{ background: "none", border: "1px solid #252525", color: "#555", borderRadius: 6, padding: "4px 10px", fontSize: 11, cursor: "pointer" }}>{showAllWeeks ? "Hide ▲" : "Show ▼"}</button>
+                </div>
+                {showAllWeeks && (
                 <div style={{ overflowX: "auto" }}>
                   <table style={S.table}>
                     <thead><tr>
@@ -904,6 +909,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                     })}</tbody>
                   </table>
                 </div>
+                )}
               </div>
 
               <div style={S.section}>
