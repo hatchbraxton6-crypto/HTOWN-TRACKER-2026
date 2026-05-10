@@ -130,6 +130,17 @@
       },
     ];
 
+    const ROOKIES = new Set(["Jack B","John K","Easton R","Scott S","Iohani W","David R","John L","Amari W","Alvin S","Mosiah F"]);
+
+    function RepName({ name }) {
+      return (
+        <span>
+          {name}
+          {ROOKIES.has(name) && <span style={{ fontSize: 9, background: "#0a1a3a", color: "#4a8aff", border: "1px solid #1a3a6e", borderRadius: 4, padding: "1px 5px", marginLeft: 5, fontWeight: 700, letterSpacing: 0.5, verticalAlign: "middle" }}>ROOK</span>}
+        </span>
+      );
+    }
+
     const STORAGE_KEY = "htown_south_full_v5";
     const GOAL_KEY = "htown_south_goal";
     const PHOTOS_KEY = "htown_south_photos_v1";
@@ -544,7 +555,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
         <div style={S.overlay} onClick={onClose}>
           <div style={{ ...S.modal, maxWidth: 400 }} onClick={e => e.stopPropagation()}>
             <div style={S.modalHead}>
-              <span style={S.modalTitle}>{rep.name}</span>
+              <span style={S.modalTitle}><RepName name={rep.name} /></span>
               <button onClick={onClose} style={S.xBtn}>✕</button>
             </div>
 
@@ -861,7 +872,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                         <td style={{ ...S.td, textAlign: "center", fontWeight: 700, color: i === 0 ? "#f5c842" : i === 1 ? "#b0b0b0" : i === 2 ? "#c87533" : "#444" }}>
                           {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
                         </td>
-                        <td style={{ ...S.td, fontWeight: 600, cursor: "pointer", color: "#e0e0e0" }} onClick={() => setProfileRep(rep.name)}>{rep.name}</td>
+                        <td style={{ ...S.td, fontWeight: 600, cursor: "pointer", color: "#e0e0e0" }} onClick={() => setProfileRep(rep.name)}><RepName name={rep.name} /></td>
                         <td style={{ ...S.td, textAlign: "center" }}><span style={S.badge}>{rep.accounts}</span></td>
                         <td style={{ ...S.td, textAlign: "right", fontWeight: 700 }}>{fmt$(rep.revenue)}</td>
                         <td style={{ ...S.td, textAlign: "center" }}><Spark data={repTrend(weeks, rep.name)} /></td>
@@ -921,7 +932,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                       <tbody>{cw.reps.map((r, i) => (
                         <tr key={r.name} style={S.tr}>
                           <td style={{ ...S.td, textAlign: "center", color: "#444", fontWeight: 600 }}>{i + 1}</td>
-                          <td style={{ ...S.td, fontWeight: 600, cursor: "pointer", color: "#e0e0e0" }} onClick={() => setProfileRep(r.name)}>{r.name}</td>
+                          <td style={{ ...S.td, fontWeight: 600, cursor: "pointer", color: "#e0e0e0" }} onClick={() => setProfileRep(r.name)}><RepName name={r.name} /></td>
                           <td style={{ ...S.td, textAlign: "center" }}><span style={S.badge}>{r.accounts}</span></td>
                           <td style={{ ...S.td, textAlign: "right", color: "#666", fontSize: 12 }}>{fmt$(r.acv)}</td>
                           <td style={{ ...S.td, textAlign: "right", fontWeight: 700, color: "#3db557" }}>{fmt$(repRev(r))}</td>
@@ -986,7 +997,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                         <td style={{ ...S.td, textAlign: "center", fontWeight: 700, color: i === 0 ? "#f5c842" : i === 1 ? "#b0b0b0" : i === 2 ? "#c87533" : "#444" }}>
                           {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
                         </td>
-                        <td style={{ ...S.td, fontWeight: 600, cursor: "pointer", color: "#e0e0e0" }} onClick={() => setProfileRep(rep.name)}>{rep.name}</td>
+                        <td style={{ ...S.td, fontWeight: 600, cursor: "pointer", color: "#e0e0e0" }} onClick={() => setProfileRep(rep.name)}><RepName name={rep.name} /></td>
                         <td style={{ ...S.td, textAlign: "center" }}><span style={S.badge}>{rep.accounts}</span></td>
                         <td style={{ ...S.td, textAlign: "right", fontWeight: 700 }}>{fmt$(rep.revenue)}</td>
                         <td style={{ ...S.td, textAlign: "right", color: "#666", fontSize: 12 }}>{fmt$(rep.avgAcv)}</td>
@@ -1060,7 +1071,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                         <td style={{ ...S.td, textAlign: "center", fontWeight: 700, color: i === 0 ? "#f5c842" : i === 1 ? "#b0b0b0" : i === 2 ? "#c87533" : "#444" }}>
                           {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
                         </td>
-                        <td style={{ ...S.td, fontWeight: 600, cursor: "pointer", color: "#e0e0e0" }} onClick={() => setProfileRep(rep.name)}>{rep.name}</td>
+                        <td style={{ ...S.td, fontWeight: 600, cursor: "pointer", color: "#e0e0e0" }} onClick={() => setProfileRep(rep.name)}><RepName name={rep.name} /></td>
                         <td style={{ ...S.td, textAlign: "center" }}><span style={S.badge}>{rep.accounts}</span></td>
                         <td style={{ ...S.td, textAlign: "right", fontWeight: 700 }}>{fmt$(rep.revenue)}</td>
                         <td style={{ ...S.td, textAlign: "center", color: "#3db557", fontWeight: 700 }}>{rep.bestWeek}</td>
@@ -1083,7 +1094,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                 <div key={rep.name} style={{ ...S.section, marginBottom: 10 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                     <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 14, letterSpacing: 2, color: i === 0 ? "#f5c842" : "#3db557" }}>
-                      {i === 0 ? "🥇 " : i === 1 ? "🥈 " : i === 2 ? "🥉 " : ""}{rep.name}
+                      {i === 0 ? "🥇 " : i === 1 ? "🥈 " : i === 2 ? "🥉 " : ""}<RepName name={rep.name} />
                     </div>
                     <div style={{ fontSize: 11, color: "#555" }}>{rep.weeksActive} weeks · {rep.accounts} total accts</div>
                   </div>
@@ -1115,7 +1126,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                   ? <div style={{ color: '#444', fontSize: 13, padding: '8px 0' }}>No reps flagged — everyone is above 6 in at least one of their last 2 weeks.</div>
                   : slumpReps.map((s, i) => (
                     <div key={s.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderTop: i > 0 ? '1px solid #2a1010' : 'none' }}>
-                      <span style={{ fontWeight: 700, cursor: 'pointer', color: '#e07070', fontSize: 14 }} onClick={() => setProfileRep(s.name)}>{s.name}</span>
+                      <span style={{ fontWeight: 700, cursor: 'pointer', color: '#e07070', fontSize: 14 }} onClick={() => setProfileRep(s.name)}><RepName name={s.name} /></span>
                       <span style={{ fontSize: 11, color: '#664444' }}>{s.prev.label}: {s.prev.accounts} accts · {s.last.label}: {s.last.accounts} accts</span>
                     </div>
                   ))
@@ -1140,7 +1151,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                     return (
                       <tr key={rep.name} style={S.tr}>
                         <td style={{ ...S.td, fontWeight: 600, cursor: 'pointer', color: flagged ? '#e07070' : '#e0e0e0' }} onClick={() => setProfileRep(rep.name)}>
-                          {rep.name}{flagged && <span style={{ marginLeft: 5 }}>⚠️</span>}
+                          <RepName name={rep.name} />{flagged && <span style={{ marginLeft: 5 }}>⚠️</span>}
                         </td>
                         <td style={{ ...S.td, textAlign: "center", color: "#666" }}>{prev ? prev.accounts : "—"}</td>
                         <td style={{ ...S.td, textAlign: "center", fontWeight: 700, color: flagged ? "#e05252" : "#e0e0e0" }}>{last ? last.accounts : "—"}</td>
