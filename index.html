@@ -1158,9 +1158,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                     const totals = tw.reduce((a, w) => { const t = weekTotals(w); return { accounts: a.accounts + t.accounts, revenue: a.revenue + t.revenue }; }, { accounts: 0, revenue: 0 });
                     return (
                       <tr key={key} style={S.tr}>
-                        <td style={{ ...S.td, fontWeight: 700 }}>
-                          <span style={{ background: team.bg, color: team.color, border: `1px solid ${team.border}`, borderRadius: 5, padding: "2px 8px", fontSize: 12, fontWeight: 700 }}>{team.label}</span>
-                        </td>
+                        <td style={{ ...S.td, fontWeight: 700, color: team.color, whiteSpace: "nowrap" }}>{team.label}</td>
                         <td style={{ ...S.td, textAlign: "center", color: "#555" }}>{team.members.length}</td>
                         <td style={{ ...S.td, textAlign: "center", fontWeight: 800, fontSize: 18 }}>{totals.accounts}</td>
                         <td style={{ ...S.td, textAlign: "right", fontWeight: 700 }}>{fmt$(totals.revenue)}</td>
