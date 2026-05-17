@@ -280,6 +280,7 @@
     // ── Team Line Chart ───────────────────────────────────────────────
     function TeamLineChart({ weeks, teams }) {
       const [tab, setTab] = useState("teams");
+      const [repFilter, setRepFilter] = useState("all");
       const [hiddenSeries, setHiddenSeries] = useState(new Set());
       const W = 640, H = 200, PL = 34, PR = 16, PT = 16, PB = 44;
       const chartW = W - PL - PR;
@@ -300,7 +301,8 @@
         }];
       } else {
         const allReps = [...new Set(weeks.flatMap(w => w.reps.map(r => r.name)))].filter(n => !n.includes("☠"));
-        series = allReps.map(name => {
+        const filtered = repFilter === "rookies" ? allReps.filter(n => ROOKIES.has(n)) : repFilter === "vets" ? allReps.filter(n => !ROOKIES.has(n)) : allReps;
+        series = filtered.map(name => {
           const teamEntry = Object.entries(teams).find(([, t]) => t.members.includes(name));
           return { key: name, label: name, color: teamEntry ? teamEntry[1].color : "#888",
             points: weeks.map(w => { const r = w.reps.find(x => x.name === name); return r ? r.accounts : 0; })
@@ -321,6 +323,13 @@
               <button key={t} onClick={() => { setTab(t); setHiddenSeries(new Set()); }} style={{ background: "none", border: `1px solid ${tab === t ? "#3db557" : "#252525"}`, color: tab === t ? "#3db557" : "#555", borderRadius: 6, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontWeight: tab === t ? 700 : 400 }}>{label}</button>
             ))}
           </div>
+          {tab === "reps" && (
+            <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+              {[["all","All"],["vets","Vets"],["rookies","Rookies"]].map(([f, label]) => (
+                <button key={f} onClick={() => { setRepFilter(f); setHiddenSeries(new Set()); }} style={{ background: "none", border: `1px solid ${repFilter === f ? "#f5c842" : "#252525"}`, color: repFilter === f ? "#f5c842" : "#555", borderRadius: 6, padding: "3px 10px", fontSize: 10, cursor: "pointer", fontWeight: repFilter === f ? 700 : 400 }}>{label}</button>
+              ))}
+            </div>
+          )}
           <div style={{ overflowX: "auto" }}>
             <svg width={W} height={H} style={{ display: "block", minWidth: W }}>
               {[0, 0.25, 0.5, 0.75, 1].map((pct, i) => {
