@@ -124,7 +124,7 @@
           { name: "David R",      accounts: 1,  acv: 1053 },
           { name: "John L",       accounts: 1,  acv: 913  },
           { name: "Amari W",      accounts: 1,  acv: 1053 },
-          { name: "Alvin S",      accounts: 1,  acv: 993  },
+          { name: "Alvin S ☠️",      accounts: 1,  acv: 993  },
           { name: "Mosiah F",     accounts: 1,  acv: 993  },
         ],
       },
@@ -152,12 +152,12 @@
       },
     ];
 
-    const ROOKIES = new Set(["Jack B","John K","Easton R","Scott S","David R","John L","Amari W","Alvin S","Mosiah F","Dallin R","Aminae A"]);
+    const ROOKIES = new Set(["Jack B","John K","Easton R","Scott S","David R","John L","Amari W","Mosiah F","Dallin R","Aminae A"]);
 
     const TEAMS = {
       "Braxton":   { label: "Bug Cartel",            badge: "BRAX", color: "#4a8aff", bg: "#0a1535", border: "#1a3a7e", members: ["Braxton H","Reese H","Seth T","Burkley P","Jack B","Dallin R"] },
       "Kevin":     { label: "Big Hitters",      badge: "KEV",  color: "#f5a020", bg: "#2a1400", border: "#7a3a00", members: ["Kevin J","David R","John L","Salsabil F","Anthony V","Amari W"] },
-      "Hannemann": { label: "Island Bois",      badge: "HANN", color: "#c050e0", bg: "#1a0a2a", border: "#5a1e7a", members: ["Hannemann W","Easton R","Scott S","Alvin S","Mosiah F","John K","Aminae A"] },
+      "Hannemann": { label: "Island Bois",      badge: "HANN", color: "#c050e0", bg: "#1a0a2a", border: "#5a1e7a", members: ["Hannemann W","Easton R","Scott S","Mosiah F","John K","Aminae A"] },
     };
     function getTeam(name) {
       return Object.entries(TEAMS).find(([, t]) => t.members.includes(name))?.[0] || null;
@@ -172,7 +172,7 @@
       );
     }
 
-    const STORAGE_KEY = "htown_south_full_v9";
+    const STORAGE_KEY = "htown_south_full_v10";
     const SEASON_END = new Date("2026-08-31");
     const GOAL_KEY = "htown_south_goal";
     const PHOTOS_KEY = "htown_south_photos_v1";
