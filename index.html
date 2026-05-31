@@ -893,7 +893,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
       const latestTotals = latestWeek ? weekTotals(latestWeek) : { accounts: 0 };
 
       const weeksRemaining = Math.max(0, (SEASON_END - new Date()) / (7 * 24 * 60 * 60 * 1000));
-      const repOfWeek = latestWeek ? [...latestWeek.reps].filter(r => !r.name.includes("☠️")).sort((a, b) => b.accounts - a.accounts)[0] : null;
+      const repOfWeek = latestWeek ? [...latestWeek.reps].filter(r => !r.name.includes("☠️")).sort((a, b) => b.accounts - a.accounts || (b.accounts * b.acv) - (a.accounts * a.acv))[0] : null;
       const slumpReps = getSlumpReps(weeks);
       const slumpNames = new Set(slumpReps.map(s => s.name));
 
@@ -1153,7 +1153,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                         <th style={{ ...S.th, textAlign: "right" }}>ACV</th>
                         <th style={{ ...S.th, textAlign: "right" }}>Revenue</th>
                       </tr></thead>
-                      <tbody>{cw.reps.filter(r => !r.name.includes("☠️")).map((r, i) => (
+                      <tbody>{cw.reps.filter(r => !r.name.includes("☠️")).sort((a, b) => b.accounts - a.accounts || (b.accounts * b.acv) - (a.accounts * a.acv)).map((r, i) => (
                         <tr key={r.name} style={S.tr}>
                           <td style={{ ...S.td, textAlign: "center", color: "#444", fontWeight: 600 }}>{i + 1}</td>
                           <td style={{ ...S.td, fontWeight: 600, cursor: "pointer", color: "#e0e0e0" }} onClick={() => setProfileRep(r.name)}><RepName name={r.name} /></td>
