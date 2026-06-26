@@ -342,7 +342,8 @@
         if (history.length >= 2) {
           const last = history[history.length - 1];
           const prev = history[history.length - 2];
-          if (last.accounts <= 6 && prev.accounts <= 6) out.push({ name, prev, last });
+          const slumpThreshold = ROOKIES.has(name) ? 3 : 6;
+          if (last.accounts <= slumpThreshold && prev.accounts <= slumpThreshold) out.push({ name, prev, last });
         }
         return out;
       }, []);
@@ -819,7 +820,7 @@ Extract ALL reps. Format names as "FirstName LastInitial" only — strip any num
                 ['Best Week', rep.bestWeek, '#f5c842'],
                 ['Avg/Wk', rep.avgPerWeek.toFixed(1), '#aaa'],
                 ['Avg ACV', fmt$(rep.avgAcv), '#aaa'],
-                ['Consistency', rep.weeksActive < 2 ? '—' : `${rep.consistency}/100`, rep.avgPerWeek <= 6 ? '#e05252' : rep.consistency >= 80 ? '#3db557' : rep.consistency >= 60 ? '#c8c820' : rep.consistency >= 40 ? '#e09020' : '#e05252'],
+                ['Consistency', rep.weeksActive < 2 ? '—' : `${rep.consistency}/100`, rep.avgPerWeek <= (ROOKIES.has(rep.name) ? 3 : 6) ? '#e05252' : rep.consistency >= 80 ? '#3db557' : rep.consistency >= 60 ? '#c8c820' : rep.consistency >= 40 ? '#e09020' : '#e05252'],
               ].map(([label, val, color]) => (
                 <div key={label} style={{ background: '#0d0d0d', border: '1px solid #1a1a1a', borderRadius: 8, padding: '8px 4px', textAlign: 'center' }}>
                   <div style={{ fontSize: 8, color: '#444', letterSpacing: 1.5, fontWeight: 700, marginBottom: 4, textTransform: 'uppercase' }}>{label}</div>
